@@ -12,12 +12,10 @@ import java.lang.reflect.Type;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 
-/**
- * Hello world!
- *
- */
 public class App 
 {
 	
@@ -27,6 +25,8 @@ public class App
 	private static String month;
 	private static String year;
 	private static String port;
+	
+	public static List<Feature> features = new ArrayList<Feature>();
 	
     public static void main( String[] args ) {
         
@@ -50,38 +50,34 @@ public class App
     	
     	port = "80";
        
-//        Set boundry
+//      Set boundary
 //    	Get no-fly zones (in buildings/no-fly-zones.geojson)
 //    	Get date's sensor list (in /maps/year/month/day/air-quality-data.json) -> sensor class list (always 33)
-    	
-//    	When necessary get words from words/first/second/third/details.json on server
+//    	Get words from words/first/second/third/details.json on server
 
-//        System.out.println(serverRequest(80));
         String urlString = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day + "/air-quality-data.json";
-//        System.out.println(serverRequest(urlString));
         String sensorJson = serverRequest(urlString);
         
         Type listType = new TypeToken<ArrayList<Sensor>>() {}.getType();
         ArrayList<Sensor> sensorList = new Gson().fromJson(sensorJson, listType);
-        System.out.println(sensorList.get(0).getLocation());
         
-//        Create geojson features of that list
+        for (int i = 0; i < 33; i++) {
+        	WordsAddress wordsAddress = wordsToLoc(sensorList.get(i).getLocation());
+        	Feature feature = Feature.fromGeometry(Point.fromLngLat(wordsAddress.getCoordinates().getLng(), wordsAddress.getCoordinates().getLat()));
+        	feature.addStringProperty("location", sensorList.get(i).getLocation());
+        	feature.addStringProperty("rgb-string", "#00ff00");
+        	feature.addStringProperty("marker-color", "#00ff00");
+        	feature.addStringProperty("marker-symbol", "lighthouse");
+        	features.add(feature);
+        }
         
-        List<Point> points = new ArrayList<Point>();
-        
-        wordsToLoc(sensorList.get(1).getLocation());
-        
-//        for (int i = 0; i < 33; i++) {
-//        	points.add(Point.fromLngLat(topleftx, toplefty));
-//        }
-        
-//        Shit I need wordsToLoc translation
-        
-        System.out.println("Done :)");
-
+//    	Create feature collection from list of features
+    	FeatureCollection fc = FeatureCollection.fromFeatures(features);
+//    	Convert to json string
+    	String geojson = fc.toJson();
+    	
+    	System.out.println(geojson);
     }
-    
-//    createUrl
     
     private static String serverRequest(String urlString) {
     	
@@ -91,7 +87,7 @@ public class App
         	var response = client.send(request, BodyHandlers.ofString());
 //        	System.out.println( response.statusCode() );
         	if (response.statusCode() == 200) {
-        		System.out.println("Server responded 200: file recieved");
+//        		System.out.println("Server responded 200: file recieved");
         		return response.body();
         	} else {
         		if (response.statusCode() == 404) {
@@ -107,29 +103,20 @@ public class App
     	return null;
     }
     
-    private static String wordsToLoc(String words) {
-    	
-//    	When necessary get words from words/first/second/third/details.json on server
-    	
+    private static WordsAddress wordsToLoc(String words) {
     	String[] wordsList = words.split("\\.");
     	String urlString = "http://localhost:" + port + "/words/" + wordsList[0] + "/" + wordsList[1] + "/" + wordsList[2] + "/details.json";
-//    	System.out.println(urlString);
     	
     	String wordsJson = serverRequest(urlString);
     	
-    	System.out.println(wordsJson);
+    	var details = new Gson().fromJson(wordsJson, WordsAddress.class);
     	
-    	return null;
+    	return details;
     }
     
 //    unpackFeatures
     
 //    packageFeatures
-    
-    
-    
-    
-    
     
     
     
