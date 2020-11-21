@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 
 public class App 
@@ -25,6 +26,11 @@ public class App
 	private static String month;
 	private static String year;
 	private static String port;
+	
+	private static double x1 = -3.192473;
+	private static double x2 = -3.184319;
+	private static double y1 = 55.946233;
+	private static double y2 = 55.942617;
 	
 	public static List<Feature> features = new ArrayList<Feature>();
 	
@@ -71,12 +77,26 @@ public class App
         	features.add(feature);
         }
         
+        
+//        System.out.println(buildingGeojson);
+        
+        List<Feature> noFlyZones = new ArrayList<Feature>();
+        
+        noFlyZones = unpackBuildings();
+        
+        for(Feature i : noFlyZones) {
+        	features.add(i);
+        }
+        
+        features.add(outlineBoundary());
+        
 //    	Create feature collection from list of features
     	FeatureCollection fc = FeatureCollection.fromFeatures(features);
 //    	Convert to json string
     	String geojson = fc.toJson();
     	
     	System.out.println(geojson);
+    	
     }
     
     private static String serverRequest(String urlString) {
@@ -116,7 +136,36 @@ public class App
     
 //    unpackFeatures
     
+    private static List<Feature> unpackBuildings() {
+    	
+    	String urlString = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
+        String buildingGeojson = serverRequest(urlString);
+    	
+    	FeatureCollection buildingGroup = FeatureCollection.fromJson(buildingGeojson);
+    	
+    	List<Feature> buildings = new ArrayList<Feature>();
+    	
+    	buildings = buildingGroup.features();
+    	
+    	return buildings;
+    }
+    
 //    packageFeatures
+    
+    private static Feature outlineBoundary() {
+    	
+    	List<Point> points = new ArrayList<Point>();
+    	
+    	points.add(Point.fromLngLat(x1, y1));
+		points.add(Point.fromLngLat(x2, y1));
+		points.add(Point.fromLngLat(x2, y2));
+		points.add(Point.fromLngLat(x1, y2));
+		points.add(Point.fromLngLat(x1, y1));
+		
+		Feature boundary = Feature.fromGeometry(LineString.fromLngLats(points));
+    	
+    	return boundary;
+    }
     
     
     
