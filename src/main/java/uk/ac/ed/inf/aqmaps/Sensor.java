@@ -7,7 +7,6 @@ public class Sensor {
 	private String reading;
 	
 	public Sensor(String location, double battery, String reading) {
-		super();
 		this.location = location;
 		this.battery = battery;
 		this.reading = reading;

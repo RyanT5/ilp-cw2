@@ -5,7 +5,6 @@ public class WordsAddress {
 	Coordinates coordinates;
 
 	public WordsAddress(Coordinates coordinates) {
-		super();
 		this.coordinates = coordinates;
 	}
 	
