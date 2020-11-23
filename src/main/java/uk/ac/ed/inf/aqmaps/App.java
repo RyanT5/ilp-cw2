@@ -1,5 +1,11 @@
 package uk.ac.ed.inf.aqmaps;
 
+import java.util.ArrayList;
+
+import com.mapbox.geojson.Point;
+import com.mapbox.geojson.Polygon;
+import com.mapbox.turf.TurfJoins;
+
 public class App 
 {
 		
@@ -18,4 +24,26 @@ public class App
     	map.renderGeojson();
     	
     }
+    
+    // distance between two points
+    
+    private double calcDistance(Point p1, Point p2) {
+    	
+    	double distance = Math.sqrt((Math.pow((p1.longitude() - p2.longitude()), 2) + Math.pow((p1.latitude() - p2.latitude()), 2)));
+    	
+		return distance;
+    }
+    
+    // collision between point and polygon - is this redundant?
+    
+    private boolean pointInPoly(Point point, Polygon poly) {
+    	
+    	boolean intersect = TurfJoins.inside(point, poly);
+    	
+    	return intersect;
+    }
+    
+    // collision between linestring and polygon
+    
+    // point within boundary
 }
