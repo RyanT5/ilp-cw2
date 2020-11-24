@@ -30,13 +30,15 @@ public class Map {
 	private static double y1 = 55.946233;
 	private static double y2 = 55.942617;
 	
-	public ArrayList<Sensor> sensorList = new ArrayList<Sensor>();
+	private List<Feature> featuredSensors = new ArrayList<Feature>();
 	
-	public List<Feature> noFlyZones = new ArrayList<Feature>();
+	private ArrayList<Sensor> sensorList = new ArrayList<Sensor>();
 	
-	public List<Feature> features = new ArrayList<Feature>();
+	private List<Feature> noFlyZones = new ArrayList<Feature>();
 	
-	public Feature boundary;
+	private Feature boundary;
+	
+	private List<Feature> allMapFeatures = new ArrayList<Feature>();
 	
 //	 Constructor
 	
@@ -57,15 +59,19 @@ public class Map {
 //        	feature.addStringProperty("rgb-string", "#00ff00");
 //        	feature.addStringProperty("marker-color", "#00ff00");
 //        	feature.addStringProperty("marker-symbol", "lighthouse");
-        	features.add(feature);
+        	
+//        	String b = feature.getStringProperty("location");
+        	featuredSensors.add(feature);
 		}
 		
-		noFlyZones = getBuildings();
-        for(Feature f : noFlyZones) {
-        	features.add(f);
-        }
+//		allMapFeatures = featuredSensors;
+		
+//		noFlyZones = getBuildings();
+//        for(Feature f : noFlyZones) {
+//        	allMapFeatures.add(f);
+//        }
         
-        features.add(getBoundary());
+//        allMapFeatures.add(boundary);
 	}
 	
 //	 Server request
@@ -140,16 +146,21 @@ public class Map {
     	
     	return boundary;
     }
-	
-//	 Render 'features'
     
-    public void renderGeojson() {
-//    	Create feature collection from list of features
-    	FeatureCollection fc = FeatureCollection.fromFeatures(features);
-//    	Convert to json string
-    	String geojson = fc.toJson();
-    	
-    	System.out.println(geojson);
+    public List<Feature> getFeaturedSensors() {
+    	return featuredSensors;
+    }
+    
+    public List<Feature> getMapFeatures() {
+		allMapFeatures = getFeaturedSensors();
+		
+        for(Feature f : noFlyZones) {
+        	allMapFeatures.add(f);
+        }
+        
+        allMapFeatures.add(boundary);
+        
+    	return allMapFeatures;
     }
 
 }

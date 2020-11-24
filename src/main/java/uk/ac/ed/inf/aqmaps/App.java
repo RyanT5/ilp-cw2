@@ -1,13 +1,18 @@
 package uk.ac.ed.inf.aqmaps;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 import com.mapbox.turf.TurfJoins;
 
-public class App 
-{
+public class App {
+	
+	public static List<Feature> sensors = new ArrayList<Feature>();
+	public static List<Feature> allFeatures = new ArrayList<Feature>();
 		
     public static void main( String[] args ) {
         
@@ -21,29 +26,34 @@ public class App
     	
 //    	Map map = new Map(arg[0], arg[1], arg[2], arg[6]);
     	Map map = new Map("15", "06", "2021", "80");
-    	map.renderGeojson();
+//    	Drone drone = new Drone(arg[3], arg[4]);
+    	Drone drone = new Drone(55.9444, -3.1878);
     	
-    }
-    
-    // distance between two points
-    
-    private double calcDistance(Point p1, Point p2) {
+    	//
+//    	sensors = map.getFeaturedSensors();
+//    	while (drone.getTerminated() == false) {
+//    		drone.nextMove(sensors);
+//    	}
+    	//
     	
-    	double distance = Math.sqrt((Math.pow((p1.longitude() - p2.longitude()), 2) + Math.pow((p1.latitude() - p2.latitude()), 2)));
+    	allFeatures = map.getMapFeatures();
+    	renderGeojson();
     	
-		return distance;
-    }
-    
-    // collision between point and polygon - is this redundant?
-    
-    private boolean pointInPoly(Point point, Polygon poly) {
-    	
-    	boolean intersect = TurfJoins.inside(point, poly);
-    	
-    	return intersect;
     }
     
     // collision between linestring and polygon
     
     // point within boundary
+    
+//	 Render 'features'
+    
+   private static void renderGeojson() {
+//   	Create feature collection from list of features
+   	FeatureCollection fc = FeatureCollection.fromFeatures(allFeatures);
+//   	Convert to json string
+   	String geojson = fc.toJson();
+   	
+   	System.out.println(geojson);
+   }
+   
 }
