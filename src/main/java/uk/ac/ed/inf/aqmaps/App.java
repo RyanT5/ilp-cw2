@@ -27,16 +27,17 @@ public class App {
 //    	Map map = new Map(arg[0], arg[1], arg[2], arg[6]);
     	Map map = new Map("15", "06", "2021", "80");
 //    	Drone drone = new Drone(arg[3], arg[4]);
-    	Drone drone = new Drone(55.9444, -3.1878);
+    	Drone drone = new Drone(55.9444, -3.1878, sensors);
     	
     	//
-//    	sensors = map.getFeaturedSensors();
-//    	while (drone.getTerminated() == false) {
-//    		drone.nextMove(sensors);
-//    	}
+    	sensors = map.getFeaturedSensors();
+    	while (drone.getTerminated() == false) {
+    		drone.nextMove();
+    	}
     	//
     	
-    	allFeatures = map.getMapFeatures();
+//    	allFeatures = map.getMapFeatures();
+    	allFeatures.add(drone.getPath());
     	renderGeojson();
     	
     }

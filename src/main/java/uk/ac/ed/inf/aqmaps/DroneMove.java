@@ -4,19 +4,19 @@ import com.mapbox.geojson.Point;
 
 public class DroneMove {
 	
-	private String direction;
+	private int direction;
 	private Point landPoint;
 	
-	public DroneMove(String direction, Point landPoint) {
+	public DroneMove(int direction, Point landPoint) {
 		this.direction = direction;
 		this.landPoint = landPoint;
 	}
 
-	public String getDirection() {
+	public int getDirection() {
 		return direction;
 	}
 
-	public void setDirection(String direction) {
+	public void setDirection(int direction) {
 		this.direction = direction;
 	}
 
