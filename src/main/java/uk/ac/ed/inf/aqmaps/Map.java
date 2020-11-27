@@ -25,10 +25,10 @@ public class Map {
 	private String year;
 	private String port;
 	
-	public static double x1 = -3.192473;
-	public static double x2 = -3.184319;
-	public static double y1 = 55.946233;
-	public static double y2 = 55.942617;
+	private static double x1 = -3.192473;
+	private static double x2 = -3.184319;
+	private static double y1 = 55.946233;
+	private static double y2 = 55.942617;
 
 	private List<Feature> featuredSensors = new ArrayList<Feature>();
 	

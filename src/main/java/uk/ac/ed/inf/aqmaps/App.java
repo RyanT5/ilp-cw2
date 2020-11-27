@@ -32,11 +32,11 @@ public class App {
     	buildings = map.getNoFlyZones();
     	
 //    	Drone drone = new Drone(arg[3], arg[4]);
-    	Drone drone = new Drone(55.9444, -3.1878, sensors, buildings);
+    	Drone drone = new Drone(-3.1878, 55.9444, sensors, buildings);
     	
     	//
     	
-    	
+    	drone.setTargetSensor();
     	while (drone.getTerminated() == false) {
     		drone.nextMove();
     	}
@@ -44,7 +44,7 @@ public class App {
     	//
     	
 //    	allFeatures = map.getMapFeatures();
-    	allFeatures = map.getFeaturedSensors();
+    	allFeatures = map.getMapFeatures();
     	allFeatures.add(drone.getPath());
     	renderGeojson();
     	
