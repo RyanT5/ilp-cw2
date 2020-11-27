@@ -11,8 +11,9 @@ import com.mapbox.turf.TurfJoins;
 
 public class App {
 	
-	public static List<Feature> sensors = new ArrayList<Feature>();
-	public static List<Feature> allFeatures = new ArrayList<Feature>();
+	private static List<Feature> sensors = new ArrayList<Feature>();
+	private static List<Feature> buildings = new ArrayList<Feature>();
+	private static List<Feature> allFeatures = new ArrayList<Feature>();
 		
     public static void main( String[] args ) {
         
@@ -26,17 +27,24 @@ public class App {
     	
 //    	Map map = new Map(arg[0], arg[1], arg[2], arg[6]);
     	Map map = new Map("15", "06", "2021", "80");
+    	
+    	sensors = map.getFeaturedSensors();
+    	buildings = map.getNoFlyZones();
+    	
 //    	Drone drone = new Drone(arg[3], arg[4]);
-    	Drone drone = new Drone(55.9444, -3.1878, sensors);
+    	Drone drone = new Drone(55.9444, -3.1878, sensors, buildings);
     	
     	//
-    	sensors = map.getFeaturedSensors();
+    	
+    	
     	while (drone.getTerminated() == false) {
     		drone.nextMove();
     	}
+//    	Feature dronePath = drone.getPath();
     	//
     	
 //    	allFeatures = map.getMapFeatures();
+    	allFeatures = map.getFeaturedSensors();
     	allFeatures.add(drone.getPath());
     	renderGeojson();
     	

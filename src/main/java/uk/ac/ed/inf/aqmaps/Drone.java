@@ -22,24 +22,40 @@ public class Drone {
 	
 	private List<Feature> unvisitedSensors = new ArrayList<Feature>();
 	private Feature targetSensor = null;
+	private List<Feature> noFlyZones = new ArrayList<Feature>();
 	
-	public Drone(double startLng, double startLat, List<Feature> sensors) {
+	public Drone(double startLng, double startLat, List<Feature> sensors, List<Feature> buildings) {
 		this.startPoint = Point.fromLngLat(startLng, startLat);
 		this.currentLoc = startPoint;
 		this.terminated = false;
 		this.unvisitedSensors = sensors;
+		this.noFlyZones = buildings;
 	}
 	
 	public void nextMove() {
 		
-		if (moveList.size() < maxMoves) {
+		System.out.println("Move function called!");
+		System.out.println("Number of sensors to visit:" + unvisitedSensors.size());
+		
+		if (moveList.size() < maxMoves && unvisitedSensors.isEmpty() == false) {
 			
 			if (targetSensor == null) {
 				targetSensor = closestSensor(unvisitedSensors);	
 			}
 			
 			// find move which takes you closest + add it to list
+			closestMove();
+			
+					
 			// take reading if in range + (targetSensor = null)
+			if (terminated == false) {
+				double targetDistance = calcDistance(moveList.get(moveList.size()).getLandPoint(), (Point)targetSensor.geometry());
+				if (targetDistance < 0.0003) {
+					// read sensor
+					System.out.println("Reached a sesnor!");
+					targetSensor = null;
+				}
+			}
 			
 		} else {
 			terminated = true;
@@ -57,6 +73,7 @@ public class Drone {
 				closest = s;
 			}
 		}
+		unvisitedSensors.remove(unvisitedSensors.indexOf(closest));
 		return closest;
 	}
 	
@@ -65,35 +82,66 @@ public class Drone {
 		// got targetSensor
 		// 36 possible (but not all valid) moves
 		
-//		int direction = 0;
-//		Point destination = calcLandPoint(direction);
-//		double distanceToTarget = calcDistance(destination, (Point)targetSensor.geometry());
-//		DroneMove closerMove = new DroneMove(direction, destination);
+		int direction;// = 0;
+		Point destination;// = calcLandPoint(direction);
+		double distanceToTarget;// = calcDistance(destination, (Point)targetSensor.geometry());
+		DroneMove closerMove = null;// = new DroneMove(direction, destination);
+		DroneMove possibleMove = null;
+		double lowestDistanceToTarget = 0;
 		
 //		moveList.add(e);
 		for (int i = 0; i < 36; i++) {
-			// check if one is close - not added to list
 			
-//			direction = i*10;
-//			destination = calcLandPoint(direction);
-//			double newDistanceToTarget = calcDistance(destination, (Point)targetSensor.geometry());
-//			if (newDistanceToTarget < distanceToTarget) {
-//				
-//			}
+			// create move
+			direction = i*10;
+			destination = calcLandPoint(direction);
+			distanceToTarget = calcDistance(destination, (Point)targetSensor.geometry());
+//			System.out.println(possibleMove == null);
+			possibleMove = new DroneMove(direction, destination);
+//			System.out.println(possibleMove == null);
 			
-//			DroneMove possibleMove = new DroneMove(direction, destination); - not needed yet
-			// then check if its valid - added to list
+			if (isValidMove(destination)) {
+				
+				if (closerMove == null) {
+					
+					closerMove = possibleMove;
+					lowestDistanceToTarget = distanceToTarget;
+					System.out.println(closerMove == null);
+					
+				} else {
+					
+					if (distanceToTarget < lowestDistanceToTarget) {
+						closerMove = possibleMove;
+						lowestDistanceToTarget = distanceToTarget;
+					}
+				}
+			}
 		}
 		// by end have a move added to list
+		if (closerMove != null) {
+//		updateDroneMoves(closerMove.getDirection(), closerMove.getLandPoint());
+			moveList.add(closerMove);
+			currentLoc =  closerMove.getLandPoint();
+		} else {
+			terminateMoves();
+			System.out.println("Didn't fine a move");
+		}
 	}
 	
 	private boolean isValidMove(Point p) {
 		// point in boundary
 		boolean valid = true;
-		if (p.longitude() < Map.x1) {
-			
+		if (p.longitude() < Map.x1 || p.longitude() > Map.x2) {
+			valid = false;
+		}
+		if (p.latitude() < Map.y1 || p.latitude() > Map.y2) {
+			valid = false;
 		}
 		// point not in building - redundant by point 3?
+		for (Feature f : noFlyZones)
+		if (pointInPoly(p, (Polygon)f.geometry())) {
+			valid = false;
+		}
 		// flightpath not cross building - hardest?
 		return valid;
 	}
@@ -134,15 +182,18 @@ public class Drone {
 	public Feature getPath() {
 		List<Point> points = new ArrayList<Point>();
 		points.add(startPoint);
+		System.out.println("Getting linestring");
+		System.out.println(moveList.isEmpty());
 		for (DroneMove m : moveList) {
 			points.add(m.getLandPoint());
+			System.out.println("Added point to drone path");
 		}
 		Feature dronePath = Feature.fromGeometry(LineString.fromLngLats(points));
 		return dronePath;
 	}
 	
 	private void terminateMoves() {
-		terminated = true;
+		terminated = true; ////////////////////////// ???????
 	}
 	
 	public boolean getTerminated() {

@@ -29,7 +29,7 @@ public class Map {
 	public static double x2 = -3.184319;
 	public static double y1 = 55.946233;
 	public static double y2 = 55.942617;
-	
+
 	private List<Feature> featuredSensors = new ArrayList<Feature>();
 	
 	private ArrayList<Sensor> sensorList = new ArrayList<Sensor>();
@@ -150,6 +150,10 @@ public class Map {
     public List<Feature> getFeaturedSensors() {
     	return featuredSensors;
     }
+    
+    public List<Feature> getNoFlyZones() {
+		return noFlyZones;
+	}
     
     public List<Feature> getMapFeatures() {
 		allMapFeatures = getFeaturedSensors();
