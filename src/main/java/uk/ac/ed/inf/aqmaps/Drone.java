@@ -46,7 +46,7 @@ public class Drone {
 		// System.out.println("Move function called!");
 //		System.out.println("Number of sensors to visit:" + unvisitedSensors.size());
 		
-		if (moveList.size() < maxMoves && unvisitedSensors.isEmpty() == false) {
+		if (moveList.size() < maxMoves) {
 			
 			// find move which takes you closest + add it to list
 			List<DroneMove> validNextMoves = new ArrayList<DroneMove>();
@@ -60,10 +60,19 @@ public class Drone {
 				if (targetDistance < 0.0003) {
 					// read sensor
 //					System.out.println("Reached sesnor " + targetSensor.getStringProperty("location") + " on move " + moveList.size());
-//					unvisitedSensors.remove(unvisitedSensors.indexOf(targetSensor));					
-					targetSensor.addStringProperty("marker-symbol", "lighthouse");
+//					unvisitedSensors.remove(unvisitedSensors.indexOf(targetSensor));
+					
+//					feature.addStringProperty("rgb-string", "#00ff00");
+//		        	feature.addStringProperty("marker-color", "#00ff00");
+//					double battery = 
+					
+//					targetSensor.addStringProperty("marker-symbol", "lighthouse");
 					visitedSensors.add(targetSensor);
-					setTargetSensor();
+					if (unvisitedSensors.isEmpty() == false) {
+						setTargetSensor();
+					} else {
+						terminated = true;
+					}
 				}
 			}
 			
@@ -144,10 +153,10 @@ public class Drone {
 		// point in boundary
 		boolean valid = true;
 //		System.out.println(p.longitude() + " > " + x1);
-		if (p.longitude() < x1 || p.longitude() > x2) {
+		if (p.longitude() <= x1 || p.longitude() >= x2) {
 			valid = false;
 		}
-		if (p.latitude() > y1 || p.latitude() < y2) {
+		if (p.latitude() >= y1 || p.latitude() <= y2) {
 			valid = false;
 		}
 		// point not in building - redundant by point 3?
@@ -200,15 +209,15 @@ public class Drone {
 			points.add(m.getLandPoint());
 //			System.out.println("Added point to drone path");
 		}
-		System.out.println("Added " + moveList.size() + " points to drone path");
+//		System.out.println("Added " + moveList.size() + " points to drone path");
 		Feature dronePath = Feature.fromGeometry(LineString.fromLngLats(points));
 		return dronePath;
 	}
 	
 	public void setTargetSensor() {
 		targetSensor = closestSensor(unvisitedSensors);
-		System.out.println();
-		System.out.println("Targeting sensor " + targetSensor.getStringProperty("location"));
+//		System.out.println();
+//		System.out.println("Targeting sensor " + targetSensor.getStringProperty("location"));
 	}
 	
 	public List<Feature> getVisitedSensors() {

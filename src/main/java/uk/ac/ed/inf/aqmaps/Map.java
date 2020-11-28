@@ -56,22 +56,8 @@ public class Map {
 			WordsAddress wordsAddress = wordsToLoc(s.getLocation());
         	Feature feature = Feature.fromGeometry(Point.fromLngLat(wordsAddress.getCoordinates().getLng(), wordsAddress.getCoordinates().getLat()));
         	feature.addStringProperty("location", s.getLocation());
-//        	feature.addStringProperty("rgb-string", "#00ff00");
-//        	feature.addStringProperty("marker-color", "#00ff00");
-//        	feature.addStringProperty("marker-symbol", "lighthouse");
-        	
-//        	String b = feature.getStringProperty("location");
         	featuredSensors.add(feature);
 		}
-		
-//		allMapFeatures = featuredSensors;
-		
-//		noFlyZones = getBuildings();
-//        for(Feature f : noFlyZones) {
-//        	allMapFeatures.add(f);
-//        }
-        
-//        allMapFeatures.add(boundary);
 	}
 	
 //	 Server request
@@ -166,5 +152,25 @@ public class Map {
         
     	return allMapFeatures;
     }
+    
+    public double getSensorBattery(String sensorLoc) {
+    	double battery = 0;
+    	for (Sensor s : sensorList) {
+    		if (s.getLocation() == sensorLoc) {
+    			battery = s.getBattery();
+    		}
+    	}
+		return battery;
+	}
+    
+    public String getSensorReading(String sensorLoc) {
+    	String reading = "0";
+    	for (Sensor s : sensorList) {
+    		if (s.getLocation() == sensorLoc) {
+    			reading = s.getReading();
+    		}
+    	}
+		return reading;
+	}
 
 }

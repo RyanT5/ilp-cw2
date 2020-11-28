@@ -26,7 +26,7 @@ public class App {
 //        Arg 6: port
     	
 //    	Map map = new Map(arg[0], arg[1], arg[2], arg[6]);
-    	Map map = new Map("15", "06", "2021", "80");
+    	Map map = new Map("16", "06", "2021", "80");
     	
     	sensors = map.getFeaturedSensors();
     	buildings = map.getNoFlyZones();
@@ -47,15 +47,49 @@ public class App {
     	allFeatures = map.getMapFeatures();
     	allFeatures.add(drone.getPath());
     	for (Feature f : drone.getVisitedSensors()) {
+    		double battery = map.getSensorBattery(f.getStringProperty("location"));
+    		String reading = map.getSensorReading(f.getStringProperty("location"));
+    		
+    		if (battery > 10) {
+    			f.addStringProperty("rgb-string", getColor(Double.parseDouble(reading)));
+    			f.addStringProperty("marker-color", getColor(Double.parseDouble(reading)));
+    			if (Double.parseDouble(reading) <= 128) {
+    				f.addStringProperty("marker-symbol", "lighthouse");
+    			} else {
+    				f.addStringProperty("marker-symbol", "danger");
+    			}
+    		} else {
+    			f.addStringProperty("rgb-string", "#000000");
+    			f.addStringProperty("marker-color", "#000000");
+    			f.addStringProperty("marker-symbol", "cross");
+    		}
     		allFeatures.add(f);
     	}
     	renderGeojson();
     	
     }
     
-    // collision between linestring and polygon
-    
-    // point within boundary
+    public static String getColor(double reading) {
+//    	Check color classification as per specification
+    	if (reading >= 0 && reading < 32) {
+    		return "#00ff00";
+    	} else if (reading >= 32 && reading < 64) {
+    		return "#40ff00";
+    	} else if (reading >= 64 && reading < 96) {
+    		return "#80ff00";
+    	} else if (reading >= 96 && reading < 128) {
+    		return "#c0ff00";
+    	} else if (reading >= 128 && reading < 160) {
+    		return "#ffc000";
+    	} else if (reading >= 160 && reading < 192) {
+    		return "#ff8000";
+    	} else if (reading >= 192 && reading < 224) {
+    		return "#ff4000";
+    	} else if (reading >= 224 && reading < 256) {
+    		return "#ff0000";
+    	}
+		return null;
+    }
     
 //	 Render 'features'
     
