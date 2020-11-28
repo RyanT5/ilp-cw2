@@ -26,7 +26,7 @@ public class App {
 //        Arg 6: port
     	
 //    	Map map = new Map(arg[0], arg[1], arg[2], arg[6]);
-    	Map map = new Map("16", "06", "2021", "80");
+    	Map map = new Map("17", "06", "2021", "80");
     	
     	sensors = map.getFeaturedSensors();
     	buildings = map.getNoFlyZones();
@@ -50,7 +50,7 @@ public class App {
     		double battery = map.getSensorBattery(f.getStringProperty("location"));
     		String reading = map.getSensorReading(f.getStringProperty("location"));
     		
-    		if (battery > 10) {
+    		if (battery >= 10) {
     			f.addStringProperty("rgb-string", getColor(Double.parseDouble(reading)));
     			f.addStringProperty("marker-color", getColor(Double.parseDouble(reading)));
     			if (Double.parseDouble(reading) <= 128) {

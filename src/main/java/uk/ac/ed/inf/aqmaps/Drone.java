@@ -1,5 +1,6 @@
 package uk.ac.ed.inf.aqmaps;
 
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 import com.mapbox.turf.TurfJoins;
+import com.mapbox.turf.models.LineIntersectsResult;
 
 public class Drone {
 	
@@ -57,7 +59,7 @@ public class Drone {
 			// take reading if in range + (targetSensor = null)
 			if (terminated == false) {
 				double targetDistance = calcDistance(moveList.get(moveList.size()-1).getLandPoint(), (Point)targetSensor.geometry());
-				if (targetDistance < 0.0003) {
+				if (targetDistance < 0.0002) {
 					// read sensor
 //					System.out.println("Reached sesnor " + targetSensor.getStringProperty("location") + " on move " + moveList.size());
 //					unvisitedSensors.remove(unvisitedSensors.indexOf(targetSensor));
@@ -122,6 +124,10 @@ public class Drone {
 		}
 //		System.out.println("Found " + validMovies.size() + " valid moves!");
 		
+		if (validMovies.size() == 0) {
+			terminated = true;
+		}
+		
 		return validMovies;
 	}
 	
@@ -160,10 +166,14 @@ public class Drone {
 			valid = false;
 		}
 		// point not in building - redundant by point 3?
-		for (Feature f : noFlyZones) {
-			if (pointInPoly(p, (Polygon)f.geometry())) {
-				valid = false;
-			}
+//		for (Feature f : noFlyZones) {
+//			if (pointInPoly(p, (Polygon)f.geometry())) {
+//				valid = false;
+//			}
+//		}
+		if (lineCrossPoly(p) == true) {
+//			System.out.println("Avoiding building");
+			valid = false;
 		}
 		// flightpath not cross building - hardest?
 		return valid;
@@ -198,6 +208,33 @@ public class Drone {
     	boolean intersect = TurfJoins.inside(point, poly);
     	
     	return intersect;
+    }
+    
+    private boolean lineCrossPoly(Point proposedMove) {
+    	boolean cross = false;
+    	Point lastMove;
+    	if (moveList.size() > 0) {
+    		lastMove = moveList.get(moveList.size()-1).getLandPoint();
+    	} else {
+    		lastMove = startPoint;
+    	}
+    	Line2D pathLine = new Line2D.Double(lastMove.longitude(), lastMove.latitude(), proposedMove.longitude(), proposedMove.latitude());
+    	for (Feature f : noFlyZones) {
+//    		System.out.println("Checking " + f.getStringProperty("name"));
+    		Polygon poly = (Polygon)f.geometry();
+    		List<Point> buildingCorners = new ArrayList<Point>();
+    		buildingCorners = poly.coordinates().get(0);
+//    		System.out.println(f.getStringProperty("name") + " " + buildingCorners.size());
+    		for (int i = 0; i < buildingCorners.size()-1; i++) {
+    				Point corner1 = buildingCorners.get(i);
+    				Point corner2 = buildingCorners.get(i+1);
+        			boolean intersect = pathLine.intersectsLine(corner1.longitude(), corner1.latitude(), corner2.longitude(), corner2.latitude());
+        			if (intersect == true) {
+        				cross = true;
+        			}
+    		}
+    	}
+    	return cross;
     }
 	
 	public Feature getPath() {
