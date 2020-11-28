@@ -46,6 +46,9 @@ public class App {
 //    	allFeatures = map.getMapFeatures();
     	allFeatures = map.getMapFeatures();
     	allFeatures.add(drone.getPath());
+    	for (Feature f : drone.getVisitedSensors()) {
+    		allFeatures.add(f);
+    	}
     	renderGeojson();
     	
     }
