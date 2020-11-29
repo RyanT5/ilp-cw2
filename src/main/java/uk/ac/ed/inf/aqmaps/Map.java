@@ -1,11 +1,6 @@
 package uk.ac.ed.inf.aqmaps;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +12,6 @@ import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 
 public class Map {
-	
-	private static final HttpClient client = HttpClient.newHttpClient();
 	
 	private String day;
 	private String month;
@@ -48,48 +41,25 @@ public class Map {
 		this.year = year;
 		this.port = port;
 		
-		sensorList = getStations();
-		noFlyZones = getBuildings();
+		Server server = new Server();
+		
+		sensorList = getStations(server);
+		noFlyZones = getBuildings(server);
 		boundary = getBoundary();
 
 		for (Sensor s: sensorList) {
-			WordsAddress wordsAddress = wordsToLoc(s.getLocation());
+			WordsAddress wordsAddress = wordsToLoc(s.getLocation(), server);
         	Feature feature = Feature.fromGeometry(Point.fromLngLat(wordsAddress.getCoordinates().getLng(), wordsAddress.getCoordinates().getLat()));
         	feature.addStringProperty("location", s.getLocation());
         	featuredSensors.add(feature);
 		}
 	}
-	
-//	 Server request
-	
-    private static String serverRequest(String urlString) {
-    	
-    	var request = HttpRequest.newBuilder().uri(URI.create(urlString)).build();
-    	
-    	try {
-        	var response = client.send(request, BodyHandlers.ofString());
-        	if (response.statusCode() == 200) {
-//        		System.out.println("Server responded 200: file recieved");
-        		return response.body();
-        	} else {
-        		if (response.statusCode() == 404) {
-        			System.out.println("Error 404: file not found");
-        		} else {
-        			System.out.println("Unknown error: server responded " + response.statusCode());
-        		}
-        	}
-        } catch (IOException | InterruptedException e) {
-        	System.out.println("Error connecting to server");
-			e.printStackTrace();
-		}
-    	return null;
-    }
     
 //     Get stations
     
-    private ArrayList<Sensor> getStations() {
+    private ArrayList<Sensor> getStations(Server server) {
     	String urlString = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day + "/air-quality-data.json";
-        String sensorJson = serverRequest(urlString);
+        String sensorJson = Server.serverRequest(urlString);
         Type listType = new TypeToken<ArrayList<Sensor>>() {}.getType();
         ArrayList<Sensor> sensorList = new Gson().fromJson(sensorJson, listType);
         return sensorList;
@@ -97,19 +67,19 @@ public class Map {
     
 //     Get coordinates from words
     
-    private WordsAddress wordsToLoc(String words) {
+    private WordsAddress wordsToLoc(String words, Server server) {
     	String[] wordsList = words.split("\\.");
     	String urlString = "http://localhost:" + port + "/words/" + wordsList[0] + "/" + wordsList[1] + "/" + wordsList[2] + "/details.json";
-    	String wordsJson = serverRequest(urlString);
+    	String wordsJson = Server.serverRequest(urlString);
     	var details = new Gson().fromJson(wordsJson, WordsAddress.class);
     	return details;
     }
 	
 //	 Get noflyzones
     
-    private List<Feature> getBuildings() {
+    private List<Feature> getBuildings(Server server) {
     	String urlString = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
-        String buildingGeojson = serverRequest(urlString);
+        String buildingGeojson = Server.serverRequest(urlString);
     	FeatureCollection buildingGroup = FeatureCollection.fromJson(buildingGeojson);
     	List<Feature> buildings = new ArrayList<Feature>();
     	buildings = buildingGroup.features();
