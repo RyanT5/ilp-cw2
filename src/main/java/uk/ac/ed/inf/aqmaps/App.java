@@ -26,7 +26,7 @@ public class App {
 //        Arg 6: port
     	
 //    	Map map = new Map(arg[0], arg[1], arg[2], arg[6]);
-    	Map map = new Map("20", "06", "2021", "80");
+    	Map map = new Map("15", "06", "2021", "80");
     	
     	sensors = map.getFeaturedSensors();
     	buildings = map.getNoFlyZones();

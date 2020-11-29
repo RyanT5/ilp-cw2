@@ -60,27 +60,26 @@ public class Drone {
 			if (terminated == false) {
 				double targetDistance = calcDistance(moveList.get(moveList.size()-1).getLandPoint(), (Point)targetSensor.geometry());
 				if (targetDistance < 0.0002) {
-					// read sensor
 //					System.out.println("Reached sesnor " + targetSensor.getStringProperty("location") + " on move " + moveList.size());
-//					unvisitedSensors.remove(unvisitedSensors.indexOf(targetSensor));
-					
-//					feature.addStringProperty("rgb-string", "#00ff00");
-//		        	feature.addStringProperty("marker-color", "#00ff00");
-//					double battery = 
-					
-//					targetSensor.addStringProperty("marker-symbol", "lighthouse");
-					unvisitedSensors.remove(unvisitedSensors.indexOf(targetSensor));
-					visitedSensors.add(targetSensor);
+					if (targetSensor.getStringProperty("location") != "home") {
+						unvisitedSensors.remove(unvisitedSensors.indexOf(targetSensor));
+						visitedSensors.add(targetSensor);
+					} else {
+						terminated = true;
+					}
 					if (unvisitedSensors.isEmpty() == false) {
 						setTargetSensor();
 					} else {
-						terminated = true;
+						// now return to starting point
+						Feature home = Feature.fromGeometry(startPoint);
+						home.addStringProperty("location", "home");
+						targetSensor = home;
+//						terminated = true;
 					}
 				}
 			}
 			
 		} else {
-			// now return to starting point
 			terminated = true;
 		}
 		
