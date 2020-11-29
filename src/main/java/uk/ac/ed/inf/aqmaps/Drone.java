@@ -69,6 +69,7 @@ public class Drone {
 //					double battery = 
 					
 //					targetSensor.addStringProperty("marker-symbol", "lighthouse");
+					unvisitedSensors.remove(unvisitedSensors.indexOf(targetSensor));
 					visitedSensors.add(targetSensor);
 					if (unvisitedSensors.isEmpty() == false) {
 						setTargetSensor();
@@ -100,7 +101,6 @@ public class Drone {
 				minDistance = distance;
 			}
 		}
-		unvisitedSensors.remove(unvisitedSensors.indexOf(closest));
 		return closest;
 	}
 	
@@ -175,8 +175,26 @@ public class Drone {
 //			System.out.println("Avoiding building");
 			valid = false;
 		}
-		// flightpath not cross building - hardest?
+		
+		if (twiceVisited(p)) {
+			valid = false;
+		}
+		
 		return valid;
+	}
+	
+	private boolean twiceVisited(Point p) {
+		int counter = 0;
+		for (DroneMove move : moveList) {
+			if (p.longitude() == move.getLandPoint().longitude() && p.latitude() == move.getLandPoint().latitude()) {
+				counter++;
+			}
+		}
+		if (counter == 2) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	private Point calcLandPoint(int direction) {
@@ -246,7 +264,7 @@ public class Drone {
 			points.add(m.getLandPoint());
 //			System.out.println("Added point to drone path");
 		}
-//		System.out.println("Added " + moveList.size() + " points to drone path");
+		System.out.println("Added " + moveList.size() + " points to drone path");
 		Feature dronePath = Feature.fromGeometry(LineString.fromLngLats(points));
 		return dronePath;
 	}
