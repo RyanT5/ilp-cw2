@@ -41,14 +41,15 @@ public class Map {
 		this.year = year;
 		this.port = port;
 		
-		Server server = new Server();
+//		Server server = new Server();
+//		Why is this line and parameters not necessary? Static reference?
 		
-		sensorList = getStations(server);
-		noFlyZones = getBuildings(server);
+		sensorList = getStations();
+		noFlyZones = getBuildings();
 		boundary = getBoundary();
 
 		for (Sensor s: sensorList) {
-			WordsAddress wordsAddress = wordsToLoc(s.getLocation(), server);
+			WordsAddress wordsAddress = wordsToLoc(s.getLocation());
         	Feature feature = Feature.fromGeometry(Point.fromLngLat(wordsAddress.getCoordinates().getLng(), wordsAddress.getCoordinates().getLat()));
         	feature.addStringProperty("location", s.getLocation());
         	featuredSensors.add(feature);
@@ -57,7 +58,7 @@ public class Map {
     
 //     Get stations
     
-    private ArrayList<Sensor> getStations(Server server) {
+    private ArrayList<Sensor> getStations() {
     	String urlString = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day + "/air-quality-data.json";
         String sensorJson = Server.serverRequest(urlString);
         Type listType = new TypeToken<ArrayList<Sensor>>() {}.getType();
@@ -67,7 +68,7 @@ public class Map {
     
 //     Get coordinates from words
     
-    private WordsAddress wordsToLoc(String words, Server server) {
+    private WordsAddress wordsToLoc(String words) {
     	String[] wordsList = words.split("\\.");
     	String urlString = "http://localhost:" + port + "/words/" + wordsList[0] + "/" + wordsList[1] + "/" + wordsList[2] + "/details.json";
     	String wordsJson = Server.serverRequest(urlString);
@@ -77,7 +78,7 @@ public class Map {
 	
 //	 Get noflyzones
     
-    private List<Feature> getBuildings(Server server) {
+    private List<Feature> getBuildings() {
     	String urlString = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
         String buildingGeojson = Server.serverRequest(urlString);
     	FeatureCollection buildingGroup = FeatureCollection.fromJson(buildingGeojson);
