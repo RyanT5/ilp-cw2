@@ -8,7 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.geojson.LineString;
+//import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 
 public class Map {
@@ -18,10 +18,10 @@ public class Map {
 	private String year;
 	private String port;
 
-	private static double x1 = -3.192473;
-	private static double x2 = -3.184319;
-	private static double y1 = 55.946233;
-	private static double y2 = 55.942617;
+//	private static double x1 = -3.192473;
+//	private static double x2 = -3.184319;
+//	private static double y1 = 55.946233;
+//	private static double y2 = 55.942617;
 
 	private List<Feature> featuredSensors = new ArrayList<Feature>();
 
@@ -29,9 +29,9 @@ public class Map {
 
 	private List<Feature> noFlyZones = new ArrayList<Feature>();
 
-	private Feature boundary;
+//	private Feature boundary;
 
-	private List<Feature> allMapFeatures = new ArrayList<Feature>();
+//	private List<Feature> allMapFeatures = new ArrayList<Feature>();
 
 	// Constructor
 	public Map(String day, String month, String year, String port) {
@@ -42,13 +42,15 @@ public class Map {
 
 		sensorList = getStations();
 		noFlyZones = getBuildings();
-		boundary = getBoundary();
+//		boundary = getBoundary();
 
 		for (Sensor s : sensorList) {
 			WordsAddress wordsAddress = wordsToLoc(s.getLocation());
 			Feature feature = Feature.fromGeometry(
 					Point.fromLngLat(wordsAddress.getCoordinates().getLng(), wordsAddress.getCoordinates().getLat()));
 			feature.addStringProperty("location", s.getLocation());
+			feature.addStringProperty("rgb-string", "#aaaaaa");
+			feature.addStringProperty("marker-color", "#aaaaaa");
 			featuredSensors.add(feature);
 		}
 	}
@@ -85,20 +87,20 @@ public class Map {
 	}
 
 	// Get boundary
-	private static Feature getBoundary() {
-
-		List<Point> points = new ArrayList<Point>();
-
-		points.add(Point.fromLngLat(x1, y1));
-		points.add(Point.fromLngLat(x2, y1));
-		points.add(Point.fromLngLat(x2, y2));
-		points.add(Point.fromLngLat(x1, y2));
-		points.add(Point.fromLngLat(x1, y1));
-
-		Feature boundary = Feature.fromGeometry(LineString.fromLngLats(points));
-
-		return boundary;
-	}
+//	private static Feature getBoundary() {
+//
+//		List<Point> points = new ArrayList<Point>();
+//
+//		points.add(Point.fromLngLat(x1, y1));
+//		points.add(Point.fromLngLat(x2, y1));
+//		points.add(Point.fromLngLat(x2, y2));
+//		points.add(Point.fromLngLat(x1, y2));
+//		points.add(Point.fromLngLat(x1, y1));
+//
+//		Feature boundary = Feature.fromGeometry(LineString.fromLngLats(points));
+//
+//		return boundary;
+//	}
 
 	public List<Feature> getFeaturedSensors() {
 		return featuredSensors;
@@ -108,16 +110,16 @@ public class Map {
 		return noFlyZones;
 	}
 
-	public List<Feature> getMapFeatures() {
-		allMapFeatures = getFeaturedSensors();
-
-		for (Feature f : noFlyZones) {
-			allMapFeatures.add(f);
-		}
-
-		allMapFeatures.add(boundary);
-		return allMapFeatures;
-	}
+//	public List<Feature> getMapFeatures() {
+//		allMapFeatures = getFeaturedSensors();
+//
+//		for (Feature f : noFlyZones) {
+//			allMapFeatures.add(f);
+//		}
+//
+//		allMapFeatures.add(boundary);
+//		return allMapFeatures;
+//	}
 
 	public double getSensorBattery(String sensorLoc) {
 		double battery = 0;

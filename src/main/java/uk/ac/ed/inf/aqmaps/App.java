@@ -36,7 +36,7 @@ public class App {
 			drone.nextMove();
 		}
 
-		allFeatures = map.getMapFeatures();
+//		allFeatures = map.getMapFeatures();
 		allFeatures.add(drone.getPath());
 
 		for (Feature f : drone.getVisitedSensors()) {
@@ -58,6 +58,10 @@ public class App {
 			}
 			allFeatures.add(f);
 		}
+		for (Feature f : drone.getUnvisitedSensors()) {
+			allFeatures.add(f);
+		}
+		System.out.println(allFeatures.size());
 		renderGeojson();
 	}
 

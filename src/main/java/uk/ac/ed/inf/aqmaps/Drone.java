@@ -11,10 +11,12 @@ import com.mapbox.geojson.Polygon;
 
 public class Drone {
 
-	private static double x1 = -3.192473;
-	private static double x2 = -3.184319;
-	private static double y1 = 55.946233;
-	private static double y2 = 55.942617;
+	private static final double x1 = -3.192473;
+	private static final double x2 = -3.184319;
+	private static final double y1 = 55.946233;
+	private static final double y2 = 55.942617;
+	
+	private static final int maxMoves = 150;
 
 	private Point startPoint;
 	private Point currentLoc;
@@ -23,8 +25,6 @@ public class Drone {
 	private int directionToTarget;
 	private boolean avoidable;
 	private int avoidanceDirection;
-
-	private static int maxMoves = 150;
 
 	private boolean terminated;
 
@@ -309,6 +309,10 @@ public class Drone {
 
 	public List<Feature> getVisitedSensors() {
 		return visitedSensors;
+	}
+
+	public List<Feature> getUnvisitedSensors() {
+		return unvisitedSensors;
 	}
 
 	public boolean getTerminated() {
