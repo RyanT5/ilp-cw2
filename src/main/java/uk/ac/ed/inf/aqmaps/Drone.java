@@ -66,6 +66,7 @@ public class Drone {
 					// Drone is in range of a target
 					if (targetSensor.getStringProperty("location") != "home") {
 						// Target is a sensor
+						moveList.get(moveList.size() - 1).setSensorRead(targetSensor.getStringProperty("location"));
 						unvisitedSensors.remove(unvisitedSensors.indexOf(targetSensor));
 						visitedSensors.add(targetSensor);
 					} else {
@@ -82,6 +83,9 @@ public class Drone {
 						targetSensor = home;
 						directionToTarget = getDirectionToTarget();
 					}
+				} else {
+					// No sensor read
+					moveList.get(moveList.size() - 1).setSensorRead("null");
 				}
 			}
 		} else {
@@ -108,13 +112,12 @@ public class Drone {
 
 	// Get possible moves from drone location
 	private List<DroneMove> getValidMoves() {
-		// int direction;
-		// Point destination;
 		List<DroneMove> validMovies = new ArrayList<DroneMove>();
 
 		for (int i = 0; i < 36; i++) {
 			int direction = i * 10;
 			Point destination = calcLandPoint(direction);
+			// Create a DroneMove instance - see DroneMove class
 			DroneMove possibleMove = new DroneMove(direction, destination);
 
 			if (isValidMove(possibleMove)) {
@@ -154,9 +157,9 @@ public class Drone {
 				ArrayList<DroneMove> edgeMoves = new ArrayList<DroneMove>();
 				// Get moves that would avoid the obstacle
 				for (int i = 0; i < validMoves.size(); i++) {
-					int directionI = validMoves.get(i).getDirection();
-					int directionI1 = validMoves.get((i + validMoves.size() - 1) % validMoves.size()).getDirection();
-					if ((directionI % 360) != ((directionI1 + 10) % 360)) {
+					int direction_1 = validMoves.get(i).getDirection();
+					int direction_2 = validMoves.get((i + validMoves.size() - 1) % validMoves.size()).getDirection();
+					if ((direction_1 % 360) != ((direction_2 + 10) % 360)) {
 						edgeMoves.add(validMoves.get((i + validMoves.size() - 1) % validMoves.size()));
 						edgeMoves.add(validMoves.get(i));
 					}
@@ -347,6 +350,10 @@ public class Drone {
 
 	public boolean getTerminated() {
 		return terminated;
+	}
+
+	public ArrayList<DroneMove> getMoveList() {
+		return moveList;
 	}
 
 	public int getNumMoves() {
