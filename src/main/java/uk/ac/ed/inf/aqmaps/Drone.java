@@ -12,61 +12,72 @@ import com.mapbox.turf.TurfJoins;
 import com.mapbox.turf.models.LineIntersectsResult;
 
 public class Drone {
-	
+
 	private static double x1 = -3.192473;
 	private static double x2 = -3.184319;
 	private static double y1 = 55.946233;
 	private static double y2 = 55.942617;
-	
+
 	private Point startPoint;
 	private Point currentLoc;
-	
+
+	private boolean obstacle;
+	private int directionToTarget;
+	private boolean avoidable;
+	private int avoidanceDirection;
+
 	private static int maxMoves = 150;
-	
+
 	private boolean terminated;
 
 	private ArrayList<DroneMove> moveList = new ArrayList<DroneMove>();
-	
+
 	private List<Feature> unvisitedSensors = new ArrayList<Feature>();
 	private List<Feature> visitedSensors = new ArrayList<Feature>();
 	private Feature targetSensor;
 	private List<Feature> noFlyZones = new ArrayList<Feature>();
-	
-	public Drone(double startLat, double startLng, List<Feature> sensors, List<Feature> buildings) {
-		this.startPoint = Point.fromLngLat(startLat, startLng);
+
+	public Drone(double startLng, double startLat, List<Feature> sensors, List<Feature> buildings) {
+		this.startPoint = Point.fromLngLat(startLng, startLat);
 		this.currentLoc = startPoint;
-//		System.out.println("currentLoc: " + currentLoc.latitude() + ", " + currentLoc.longitude());
+		// System.out.println("currentLoc: " + currentLoc.latitude() + ", " +
+		// currentLoc.longitude());
 		this.terminated = false;
 		this.unvisitedSensors = sensors;
 		this.noFlyZones = buildings;
+
+		this.obstacle = false;
+		this.avoidable = false;
 	}
-	
+
 	public void nextMove() {
-		
-//		System.out.println(currentLoc.latitude());
-		
-		// System.out.println("Move function called!");
+
+		//  System.out.println(currentLoc.longitude() + ", " + currentLoc.latitude());
+
+//		System.out.println("Move function called!");
 //		System.out.println("Number of sensors to visit:" + unvisitedSensors.size());
-		
+
 		if (moveList.size() < maxMoves) {
-			
+
 			// find move which takes you closest + add it to list
 			List<DroneMove> validNextMoves = new ArrayList<DroneMove>();
 			validNextMoves = getValidMoves();
 			closestMove(validNextMoves);
-			
-					
+
 			// take reading if in range + (targetSensor = null)
 			if (terminated == false) {
-				double targetDistance = calcDistance(moveList.get(moveList.size()-1).getLandPoint(), (Point)targetSensor.geometry());
+				double targetDistance = calcDistance(moveList.get(moveList.size() - 1).getLandPoint(),
+						(Point) targetSensor.geometry());
 				if (targetDistance < 0.0002) {
-//					System.out.println("Reached sesnor " + targetSensor.getStringProperty("location") + " on move " + moveList.size());
+					System.out.println("Reached sesnor " + targetSensor.getStringProperty("location") + " on move "
+							+ moveList.size());
 					if (targetSensor.getStringProperty("location") != "home") {
 						unvisitedSensors.remove(unvisitedSensors.indexOf(targetSensor));
 						visitedSensors.add(targetSensor);
 					} else {
 						terminated = true;
 					}
+//					System.out.println("target next sensor? " + !unvisitedSensors.isEmpty());
 					if (unvisitedSensors.isEmpty() == false) {
 						setTargetSensor();
 					} else {
@@ -74,22 +85,23 @@ public class Drone {
 						Feature home = Feature.fromGeometry(startPoint);
 						home.addStringProperty("location", "home");
 						targetSensor = home;
+						directionToTarget = getDirectionToTarget();
 //						terminated = true;
 					}
 				}
 			}
-			
+
 		} else {
 			terminated = true;
 		}
-		
+
 	}
 
 	private Feature closestSensor(List<Feature> sensors) {
 		Feature closest = sensors.get(0);
-		double minDistance = calcDistance((Point)closest.geometry(), currentLoc);
+		double minDistance = calcDistance((Point) closest.geometry(), currentLoc);
 		for (Feature s : sensors) {
-			Point sensorPoint = (Point)s.geometry();
+			Point sensorPoint = (Point) s.geometry();
 			double distance = calcDistance(sensorPoint, currentLoc);
 //			System.out.println(distance);
 //			System.out.println(s.getStringProperty("location"));
@@ -102,86 +114,174 @@ public class Drone {
 		}
 		return closest;
 	}
-	
+
 	private List<DroneMove> getValidMoves() {
-		
+
 		int direction;
 		Point destination;
 		List<DroneMove> validMovies = new ArrayList<DroneMove>();
-		
+
 		for (int i = 0; i < 36; i++) {
-			
-			direction = i*10;
+
+			direction = i * 10;
 			destination = calcLandPoint(direction);
-//			System.out.println(destination.latitude());
-//			System.out.println("Looking for valid moves...");
-			
-			if (isValidMove(destination)) {
-				DroneMove possibleMove = new DroneMove(direction, destination);
+			DroneMove possibleMove = new DroneMove(direction, destination);
+
+			if (isValidMove(possibleMove)) {
 				validMovies.add(possibleMove);
 			}
 		}
 //		System.out.println("Found " + validMovies.size() + " valid moves!");
-		
+
 		if (validMovies.size() == 0) {
 			terminated = true;
 		}
-		
+
 		return validMovies;
 	}
-	
+
 	private void closestMove(List<DroneMove> validMoves) {
-		
+
 		if (validMoves.isEmpty() == false) {
-		DroneMove closerMove = validMoves.get(0);
-		double lowestDistanceToTarget = calcDistance(closerMove.getLandPoint(), (Point)targetSensor.geometry());
-		double distanceToTarget;
-//		Point destination;
-		for (DroneMove d : validMoves) {
-//			destination = d.getLandPoint()
-//			System.out.println(d.getLandPoint().latitude());
-			distanceToTarget = calcDistance(d.getLandPoint(), (Point)targetSensor.geometry());
-			
-			if (distanceToTarget < lowestDistanceToTarget) {
-				closerMove = d;
-				lowestDistanceToTarget = distanceToTarget;
+			if (obstacle == false) {
+				DroneMove closerMove = validMoves.get(0);
+				double lowestDistanceToTarget = calcDistance(closerMove.getLandPoint(),
+						(Point) targetSensor.geometry());
+				double distanceToTarget;
+
+				for (DroneMove d : validMoves) {
+
+					distanceToTarget = calcDistance(d.getLandPoint(), (Point) targetSensor.geometry());
+
+					if (distanceToTarget < lowestDistanceToTarget) {
+						closerMove = d;
+						lowestDistanceToTarget = distanceToTarget;
+					}
+				}
+
+				moveList.add(closerMove);
+				currentLoc = closerMove.getLandPoint();
+				System.out.println("Move made in direction " + closerMove.getDirection());
+			} else {
+				ArrayList<DroneMove> edgeMoves = new ArrayList<DroneMove>();
+				System.out.println("When obsticle == true");
+				for (int i = 0; i < validMoves.size(); i++) {
+					int directionI = validMoves.get(i).getDirection();
+					int directionI1 = validMoves.get((i + validMoves.size() - 1) % validMoves.size()).getDirection();
+					if ((directionI % 360) != ((directionI1 + 10) % 360)) {
+//						System.out.println("made avoidence move");
+//						System.out.println(directionI);
+//						System.out.println(directionI1);
+						edgeMoves.add(validMoves.get((i + validMoves.size() - 1) % validMoves.size()));
+						edgeMoves.add(validMoves.get(i));
+						// System.out.println("Edge options: " + validMoves.get(i).getDirection() + " vs " + directionToTarget);
+					}
+				}
+				// System.out.println("Hello?????");
+				if (avoidable == false) {
+					System.out.println("directionToTarget = " + directionToTarget);
+					// int smallestDifference = Math.abs(directionToTarget - edgeMoves.get(0).getDirection());
+					int smallestDifference = gapBetweenAngles(directionToTarget, edgeMoves.get(0).getDirection());
+					DroneMove closestMove = edgeMoves.get(0);
+					for (DroneMove move : edgeMoves) {
+						int difference = gapBetweenAngles(directionToTarget, move.getDirection());
+						System.out.println("difference of " + difference + " at " + move.getDirection());
+						if (difference < smallestDifference) {
+							smallestDifference = difference;
+							closestMove = move;
+						}
+
+					}
+					avoidable = true;
+					avoidanceDirection = closestMove.getDirection();
+					System.out.println("Establish avoidanceDirection = " + avoidanceDirection);
+					moveList.add(closestMove);
+					currentLoc = closestMove.getLandPoint();
+					System.out.println("Move made in direction " + closestMove.getDirection());
+				} else {
+
+					// check which is closest to avoidanceDirection
+					// int smallestDifference = (directionToTarget + edgeMoves.get(0).getDirection()) % 360;
+					int smallestDifference = gapBetweenAngles(directionToTarget, edgeMoves.get(0).getDirection());
+					DroneMove closestMove = edgeMoves.get(0);
+					for (DroneMove move : edgeMoves) {
+						// int difference = (directionToTarget + move.getDirection()) % 360;
+						int difference = gapBetweenAngles(directionToTarget, move.getDirection());
+
+						if (difference < smallestDifference) {
+							smallestDifference = difference;
+							closestMove = move;
+						}
+
+					}
+					moveList.add(closestMove);
+					currentLoc = closestMove.getLandPoint();
+					System.out.println("Move made in direction " + closestMove.getDirection());
+//					System.out.println("Close to avoidanceDirection = " + avoidanceDirection);
+				}
 			}
 		}
-
-//		System.out.println(closerMove.getLandPoint().latitude());
-			moveList.add(closerMove);
-			currentLoc = closerMove.getLandPoint();
-		}
 	}
-	
-	private boolean isValidMove(Point p) {
+
+	private boolean isValidMove(DroneMove move) {
 		// point in boundary
 		boolean valid = true;
 //		System.out.println(p.longitude() + " > " + x1);
-		if (p.longitude() <= x1 || p.longitude() >= x2) {
+		if (move.getLandPoint().longitude() <= x1 || move.getLandPoint().longitude() >= x2) {
 			valid = false;
 		}
-		if (p.latitude() >= y1 || p.latitude() <= y2) {
+		if (move.getLandPoint().latitude() >= y1 || move.getLandPoint().latitude() <= y2) {
 			valid = false;
 		}
 		// point not in building - redundant by point 3?
 //		for (Feature f : noFlyZones) {
-//			if (pointInPoly(p, (Polygon)f.geometry())) {
+//			if (pointInPoly(move.getLandPoint(), (Polygon)f.geometry())) {
 //				valid = false;
 //			}
 //		}
-		if (lineCrossPoly(p) == true) {
-//			System.out.println("Avoiding building");
+		if (lineCrossPoly(move.getLandPoint()) == true) {
+			System.out.println("Avoiding building at " + move.getDirection());
+			valid = false;
+			if (move.getDirection() == directionToTarget && obstacle == false) {
+				obstacle = true;
+				directionToTarget = getDirectionToTarget();
+				System.out.println(" - started obsticle avoidence");
+			}
+		}
+
+		if (move.getDirection() == directionToTarget && valid == true && obstacle == true) {
+			obstacle = false;
+			avoidable = false;
+			System.out.println("ended obsticle avoidence");
+		}
+
+		if (twiceVisited(move.getLandPoint())) {
 			valid = false;
 		}
-		
-		if (twiceVisited(p)) {
-			valid = false;
-		}
-		
+
 		return valid;
 	}
-	
+
+	private int getDirectionToTarget() {
+		// TODO Auto-generated method stub
+		int testDirection = 0;
+		int targetDirection = testDirection;
+		Point destination = calcLandPoint(testDirection);
+		double distanceToTarget = calcDistance(destination, (Point) targetSensor.geometry());
+		double minDistance = distanceToTarget;
+		for (int i = 0; i < 36; i++) {
+			testDirection = i * 10;
+			destination = calcLandPoint(testDirection);
+			distanceToTarget = calcDistance(destination, (Point) targetSensor.geometry());
+			if (distanceToTarget < minDistance) {
+				minDistance = distanceToTarget;
+				targetDirection = testDirection;
+			}
+		}
+
+		return targetDirection;
+	}
+
 	private boolean twiceVisited(Point p) {
 		int counter = 0;
 		for (DroneMove move : moveList) {
@@ -195,7 +295,7 @@ public class Drone {
 			return false;
 		}
 	}
-	
+
 	private Point calcLandPoint(int direction) {
 //		System.out.println("calcLandPoint");
 //		System.out.println("currentLoc: " + currentLoc.latitude() + ", " + currentLoc.longitude());
@@ -208,52 +308,70 @@ public class Drone {
 //		System.out.println("currentLoc: " + currentLoc.longitude() + ", " + currentLoc.latitude() + " -> landPoint: " + landing.longitude() + ", " + landing.longitude());
 		return landing;
 	}
-	
+
 	// distance between two points
-    
-    private double calcDistance(Point p1, Point p2) {
-    	
-    	double distance = Math.sqrt((Math.pow((p1.latitude() - p2.latitude()), 2) + Math.pow((p1.longitude() - p2.longitude()), 2)));
-    	
+
+	private double calcDistance(Point p1, Point p2) {
+
+		double distance = Math
+				.sqrt((Math.pow((p1.latitude() - p2.latitude()), 2) + Math.pow((p1.longitude() - p2.longitude()), 2)));
+
 		return distance;
-    }
-    
-    // collision between point and polygon - is this redundant?
-    
-    private boolean pointInPoly(Point point, Polygon poly) {
-    	
-    	boolean intersect = TurfJoins.inside(point, poly);
-    	
-    	return intersect;
-    }
-    
-    private boolean lineCrossPoly(Point proposedMove) {
-    	boolean cross = false;
-    	Point lastMove;
-    	if (moveList.size() > 0) {
-    		lastMove = moveList.get(moveList.size()-1).getLandPoint();
-    	} else {
-    		lastMove = startPoint;
-    	}
-    	Line2D pathLine = new Line2D.Double(lastMove.longitude(), lastMove.latitude(), proposedMove.longitude(), proposedMove.latitude());
-    	for (Feature f : noFlyZones) {
+	}
+
+	// collision between point and polygon - is this redundant?
+
+	private boolean pointInPoly(Point point, Polygon poly) {
+
+		boolean intersect = TurfJoins.inside(point, poly);
+
+		return intersect;
+	}
+
+	private boolean lineCrossPoly(Point proposedMove) {
+		boolean cross = false;
+		Point lastMove;
+		if (moveList.size() > 0) {
+			lastMove = moveList.get(moveList.size() - 1).getLandPoint();
+		} else {
+			lastMove = startPoint;
+		}
+		Line2D pathLine = new Line2D.Double(lastMove.longitude(), lastMove.latitude(), proposedMove.longitude(),
+				proposedMove.latitude());
+		for (Feature f : noFlyZones) {
 //    		System.out.println("Checking " + f.getStringProperty("name"));
-    		Polygon poly = (Polygon)f.geometry();
-    		List<Point> buildingCorners = new ArrayList<Point>();
-    		buildingCorners = poly.coordinates().get(0);
+			Polygon poly = (Polygon) f.geometry();
+			List<Point> buildingCorners = new ArrayList<Point>();
+			buildingCorners = poly.coordinates().get(0);
 //    		System.out.println(f.getStringProperty("name") + " " + buildingCorners.size());
-    		for (int i = 0; i < buildingCorners.size()-1; i++) {
-    				Point corner1 = buildingCorners.get(i);
-    				Point corner2 = buildingCorners.get(i+1);
-        			boolean intersect = pathLine.intersectsLine(corner1.longitude(), corner1.latitude(), corner2.longitude(), corner2.latitude());
-        			if (intersect == true) {
-        				cross = true;
-        			}
-    		}
-    	}
-    	return cross;
-    }
-	
+			for (int i = 0; i < buildingCorners.size() - 1; i++) {
+				Point corner1 = buildingCorners.get(i);
+				Point corner2 = buildingCorners.get(i + 1);
+				boolean intersect = pathLine.intersectsLine(corner1.longitude(), corner1.latitude(),
+						corner2.longitude(), corner2.latitude());
+				if (intersect == true) {
+					cross = true;
+				}
+			}
+		}
+		return cross;
+	}
+
+	private int gapBetweenAngles(int a, int b) {
+		int ans;
+		if (a < b) {
+			ans = (b-a);
+		} else {
+			ans = (a-b);
+		}
+
+		if (ans > 180) {
+			return (360 - ans);
+		} else {
+			return ans;
+		}
+	}
+
 	public Feature getPath() {
 		List<Point> points = new ArrayList<Point>();
 		points.add(startPoint);
@@ -267,21 +385,23 @@ public class Drone {
 		Feature dronePath = Feature.fromGeometry(LineString.fromLngLats(points));
 		return dronePath;
 	}
-	
+
 	public void setTargetSensor() {
 		targetSensor = closestSensor(unvisitedSensors);
-//		System.out.println();
-//		System.out.println("Targeting sensor " + targetSensor.getStringProperty("location"));
+		directionToTarget = getDirectionToTarget();
+		// System.out.println("directionToTarget set to " + directionToTarget);
+		System.out.println("Targeting sensor " + targetSensor.getStringProperty("location") + " which is "
+				+ calcDistance(currentLoc, (Point) targetSensor.geometry()));
 	}
-	
+
 	public List<Feature> getVisitedSensors() {
 		return visitedSensors;
 	}
-	
+
 	// private void terminateMoves() {
-	// 	terminated = true;
+	// terminated = true;
 	// }
-	
+
 	public boolean getTerminated() {
 		return terminated;
 	}
