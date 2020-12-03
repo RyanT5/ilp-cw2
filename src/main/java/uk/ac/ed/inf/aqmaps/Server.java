@@ -8,28 +8,31 @@ import java.net.http.HttpResponse.BodyHandlers;
 
 public class Server {
 
-//	Establish the http client
-    private static final HttpClient client = HttpClient.newHttpClient();
-    
-//	Server request
-    public static String serverRequest(String urlString) {
-    	var request = HttpRequest.newBuilder().uri(URI.create(urlString)).build();
-    	try {
-        	var response = client.send(request, BodyHandlers.ofString());
-        	if (response.statusCode() == 200) {
-        		return response.body();
-        	} else {
-        		if (response.statusCode() == 404) {
-        			System.out.println("Error 404: file not found");
-        		} else {
-        			System.out.println("Unknown error: server responded " + response.statusCode());
-        		}
-        	}
-        } catch (IOException | InterruptedException e) {
-        	System.out.println("Error connecting to server");
+	// Establish the http client
+	private static final HttpClient client = HttpClient.newHttpClient();
+
+	// Server request
+	public static String serverRequest(String urlString) {
+		var request = HttpRequest.newBuilder().uri(URI.create(urlString)).build();
+		try {
+			var response = client.send(request, BodyHandlers.ofString());
+			if (response.statusCode() == 200) {
+				// Successful request
+				return response.body();
+			} else {
+				if (response.statusCode() == 404) {
+					// Server active but no such file
+					System.out.println("Error 404: file not found");
+				} else {
+					// Server connection failed
+					System.out.println("Unknown error: server responded " + response.statusCode());
+				}
+			}
+		} catch (IOException | InterruptedException e) {
+			System.out.println("Error connecting to server");
 			e.printStackTrace();
 		}
-    	return null;
-    }
+		return null;
+	}
 
 }

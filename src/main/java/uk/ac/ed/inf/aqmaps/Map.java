@@ -8,7 +8,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
-//import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 
 public class Map {
@@ -18,20 +17,11 @@ public class Map {
 	private String year;
 	private String port;
 
-//	private static double x1 = -3.192473;
-//	private static double x2 = -3.184319;
-//	private static double y1 = 55.946233;
-//	private static double y2 = 55.942617;
-
 	private List<Feature> featuredSensors = new ArrayList<Feature>();
 
 	private ArrayList<Sensor> sensorList = new ArrayList<Sensor>();
 
 	private List<Feature> noFlyZones = new ArrayList<Feature>();
-
-//	private Feature boundary;
-
-//	private List<Feature> allMapFeatures = new ArrayList<Feature>();
 
 	// Constructor
 	public Map(String day, String month, String year, String port) {
@@ -40,10 +30,13 @@ public class Map {
 		this.year = year;
 		this.port = port;
 
+		// Get sensor data from server
 		sensorList = getStations();
+		// Get building data from server
 		noFlyZones = getBuildings();
-//		boundary = getBoundary();
 
+		// Get what3words data from server
+		// Turn sesnor data into valid features
 		for (Sensor s : sensorList) {
 			WordsAddress wordsAddress = wordsToLoc(s.getLocation());
 			Feature feature = Feature.fromGeometry(
@@ -55,7 +48,7 @@ public class Map {
 		}
 	}
 
-	// Get stations
+	// Get sensors
 	private ArrayList<Sensor> getStations() {
 		String urlString = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day
 				+ "/air-quality-data.json";
@@ -86,21 +79,7 @@ public class Map {
 		return buildings;
 	}
 
-	// Get boundary
-//	private static Feature getBoundary() {
-//
-//		List<Point> points = new ArrayList<Point>();
-//
-//		points.add(Point.fromLngLat(x1, y1));
-//		points.add(Point.fromLngLat(x2, y1));
-//		points.add(Point.fromLngLat(x2, y2));
-//		points.add(Point.fromLngLat(x1, y2));
-//		points.add(Point.fromLngLat(x1, y1));
-//
-//		Feature boundary = Feature.fromGeometry(LineString.fromLngLats(points));
-//
-//		return boundary;
-//	}
+	// Public getters
 
 	public List<Feature> getFeaturedSensors() {
 		return featuredSensors;
@@ -109,17 +88,6 @@ public class Map {
 	public List<Feature> getNoFlyZones() {
 		return noFlyZones;
 	}
-
-//	public List<Feature> getMapFeatures() {
-//		allMapFeatures = getFeaturedSensors();
-//
-//		for (Feature f : noFlyZones) {
-//			allMapFeatures.add(f);
-//		}
-//
-//		allMapFeatures.add(boundary);
-//		return allMapFeatures;
-//	}
 
 	public double getSensorBattery(String sensorLoc) {
 		double battery = 0;

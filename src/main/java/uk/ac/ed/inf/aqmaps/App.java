@@ -17,26 +17,32 @@ public class App {
 		// Arg 0: day
 		// Arg 1: month
 		// Arg 2: year
-		// Arg 3: starting point x
-		// Arg 4: starting point y
+		// Arg 3: starting point lng
+		// Arg 4: starting point lat
 		// Arg 5: seed
 		// Arg 6: port
 
+		// Initialise the map - see Map class
 		// Map map = new Map(arg[0], arg[1], arg[2], arg[6]);
-		Map map = new Map("09", "01", "2021", "80");
+		Map map = new Map("15", "06", "2021", "80");
 
+		// Get the sesnor and building features from the map
 		sensors = map.getFeaturedSensors();
 		buildings = map.getNoFlyZones();
 
+		// Initialise the drone - see Drone class
 		// Drone drone = new Drone(arg[3], arg[4], sensors, buildings);
 		Drone drone = new Drone(-3.1878, 55.9444, sensors, buildings);
 
+		// Begin the drone algorithm - see Drone class
 		drone.setTargetSensor();
 		while (drone.getTerminated() == false) {
 			drone.nextMove();
 		}
 
-//		allFeatures = map.getMapFeatures();
+		// Drone algorithm has terminated
+		// Get the features to write geojson output
+
 		allFeatures.add(drone.getPath());
 
 		for (Feature f : drone.getVisitedSensors()) {
@@ -65,8 +71,8 @@ public class App {
 		renderGeojson();
 	}
 
+	// Check color classification as per specification
 	public static String getColor(double reading) {
-		// Check color classification as per specification
 		if (reading >= 0 && reading < 32) {
 			return "#00ff00";
 		} else if (reading >= 32 && reading < 64) {
@@ -87,8 +93,7 @@ public class App {
 		return null;
 	}
 
-	// Render 'features'
-
+	// Render features
 	private static void renderGeojson() {
 		// Create feature collection from list of features
 		FeatureCollection fc = FeatureCollection.fromFeatures(allFeatures);
