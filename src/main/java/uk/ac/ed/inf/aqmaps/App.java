@@ -22,52 +22,23 @@ public class App {
 		// Arg 5: seed
 		// Arg 6: port
 
-		// for (int k = 2020; k < 2022; k++) {
-		// for (int j = 1; j < 13; j++) {
-		// for (int i = 1; i < 29; i++) {
-
 		// Map map = new Map(arg[0], arg[1], arg[2], arg[6]);
 		Map map = new Map("09", "01", "2021", "80");
-
-		// String day = Integer.toString(i);
-		// String month = Integer.toString(j);
-		// String year = Integer.toString(k);
-
-		// if (day.length() == 1) {
-		// day = "0" + Integer.toString(i);
-		// }
-		// if (month.length() == 1) {
-		// month = "0" + Integer.toString(j);
-		// }
-
-		// Map map = new Map(day, month, year, "80");
 
 		sensors = map.getFeaturedSensors();
 		buildings = map.getNoFlyZones();
 
-		// Drone drone = new Drone(arg[3], arg[4]);
+		// Drone drone = new Drone(arg[3], arg[4], sensors, buildings);
 		Drone drone = new Drone(-3.1878, 55.9444, sensors, buildings);
-
-		//
 
 		drone.setTargetSensor();
 		while (drone.getTerminated() == false) {
 			drone.nextMove();
 		}
-		// Feature dronePath = drone.getPath();
-		//
 
-		// if (drone.getNumMoves() == 150) {
-		// System.out.println("Possible fail on " + i + j + k);
-		// }
-		//
-		// }
-		// }
-		// }
-
-		// allFeatures = map.getMapFeatures();
 		allFeatures = map.getMapFeatures();
 		allFeatures.add(drone.getPath());
+
 		for (Feature f : drone.getVisitedSensors()) {
 			double battery = map.getSensorBattery(f.getStringProperty("location"));
 			String reading = map.getSensorReading(f.getStringProperty("location"));
@@ -88,9 +59,6 @@ public class App {
 			allFeatures.add(f);
 		}
 		renderGeojson();
-
-		// System.out.println("Test complete :)");
-
 	}
 
 	public static String getColor(double reading) {

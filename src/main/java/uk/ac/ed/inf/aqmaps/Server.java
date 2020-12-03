@@ -17,7 +17,6 @@ public class Server {
     	try {
         	var response = client.send(request, BodyHandlers.ofString());
         	if (response.statusCode() == 200) {
-//        		System.out.println("Server responded 200: file received");
         		return response.body();
         	} else {
         		if (response.statusCode() == 404) {
