@@ -18,9 +18,7 @@ public class Map {
 	private String port;
 
 	private List<Feature> featuredSensors = new ArrayList<Feature>();
-
 	private ArrayList<Sensor> sensorList = new ArrayList<Sensor>();
-
 	private List<Feature> noFlyZones = new ArrayList<Feature>();
 
 	// Constructor
@@ -37,9 +35,9 @@ public class Map {
 
 		// Get what3words data from server
 		// Turn sesnor data into valid features
-		for (Sensor s : sensorList) {
-			WordsAddress wordsAddress = wordsToLoc(s.getLocation());
-			Feature feature = Feature.fromGeometry(
+		for (var s : sensorList) {
+			var wordsAddress = wordsToLoc(s.getLocation());
+			var feature = Feature.fromGeometry(
 					Point.fromLngLat(wordsAddress.getCoordinates().getLng(), wordsAddress.getCoordinates().getLat()));
 			feature.addStringProperty("location", s.getLocation());
 			feature.addStringProperty("rgb-string", "#aaaaaa");
@@ -50,9 +48,9 @@ public class Map {
 
 	// Get sensors
 	private ArrayList<Sensor> getStations() {
-		String urlString = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day
+		var urlString = "http://localhost:" + port + "/maps/" + year + "/" + month + "/" + day
 				+ "/air-quality-data.json";
-		String sensorJson = Server.serverRequest(urlString);
+		var sensorJson = Server.serverRequest(urlString);
 		Type listType = new TypeToken<ArrayList<Sensor>>() {
 		}.getType();
 		ArrayList<Sensor> sensorList = new Gson().fromJson(sensorJson, listType);
@@ -61,19 +59,19 @@ public class Map {
 
 	// Get coordinates from words
 	private WordsAddress wordsToLoc(String words) {
-		String[] wordsList = words.split("\\.");
-		String urlString = "http://localhost:" + port + "/words/" + wordsList[0] + "/" + wordsList[1] + "/"
-				+ wordsList[2] + "/details.json";
-		String wordsJson = Server.serverRequest(urlString);
+		var wordsList = words.split("\\.");
+		var urlString = "http://localhost:" + port + "/words/" + wordsList[0] + "/" + wordsList[1] + "/" + wordsList[2]
+				+ "/details.json";
+		var wordsJson = Server.serverRequest(urlString);
 		var details = new Gson().fromJson(wordsJson, WordsAddress.class);
 		return details;
 	}
 
 	// Get noflyzones
 	private List<Feature> getBuildings() {
-		String urlString = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
-		String buildingGeojson = Server.serverRequest(urlString);
-		FeatureCollection buildingGroup = FeatureCollection.fromJson(buildingGeojson);
+		var urlString = "http://localhost:" + port + "/buildings/no-fly-zones.geojson";
+		var buildingGeojson = Server.serverRequest(urlString);
+		var buildingGroup = FeatureCollection.fromJson(buildingGeojson);
 		List<Feature> buildings = new ArrayList<Feature>();
 		buildings = buildingGroup.features();
 		return buildings;
@@ -90,8 +88,8 @@ public class Map {
 	}
 
 	public double getSensorBattery(String sensorLoc) {
-		double battery = 0;
-		for (Sensor s : sensorList) {
+		var battery = 0.0;
+		for (var s : sensorList) {
 			if (s.getLocation() == sensorLoc) {
 				battery = s.getBattery();
 			}
@@ -100,8 +98,8 @@ public class Map {
 	}
 
 	public String getSensorReading(String sensorLoc) {
-		String reading = "0";
-		for (Sensor s : sensorList) {
+		var reading = "0";
+		for (var s : sensorList) {
 			if (s.getLocation() == sensorLoc) {
 				reading = s.getReading();
 			}

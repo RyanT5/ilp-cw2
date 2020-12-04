@@ -3,7 +3,7 @@ package uk.ac.ed.inf.aqmaps;
 public class WordsAddress {
 
 	// Maps to data in air-quality-data.json
-	Coordinates coordinates;
+	private Coordinates coordinates;
 
 	// Constructor
 	public WordsAddress(Coordinates coordinates) {
@@ -12,8 +12,8 @@ public class WordsAddress {
 
 	// Nested static class
 	public static class Coordinates {
-		double lng;
-		double lat;
+		private double lng;
+		private double lat;
 
 		// Constructor for nexted class
 		public Coordinates(double lng, double lat) {

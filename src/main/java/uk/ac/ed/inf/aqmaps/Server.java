@@ -6,10 +6,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 
-public class Server {
+public final class Server {
 
 	// Establish the http client
 	private static final HttpClient client = HttpClient.newHttpClient();
+
+	// Constructor
+	private Server() {
+		// Nothing needed here
+	}
 
 	// Server request
 	public static String serverRequest(String urlString) {

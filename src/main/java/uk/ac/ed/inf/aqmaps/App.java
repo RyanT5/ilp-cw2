@@ -35,7 +35,7 @@ public class App {
 
 		// Initialise the map - see Map class
 		// Map map = new Map(arg[0], arg[1], arg[2], arg[6]);
-		Map map = new Map("15", "06", "2021", "80");
+		var map = new Map("15", "06", "2021", "80");
 
 		// Get the sesnor and building features from the map
 		sensors = map.getFeaturedSensors();
@@ -43,7 +43,7 @@ public class App {
 
 		// Initialise the drone - see Drone class
 		// Drone drone = new Drone(arg[3], arg[4], sensors, buildings);
-		Drone drone = new Drone(-3.1878, 55.9444, sensors, buildings);
+		var drone = new Drone(-3.1878, 55.9444, sensors, buildings);
 
 		// Begin the drone algorithm - see Drone class
 		drone.setTargetSensor();
@@ -53,12 +53,11 @@ public class App {
 
 		// Drone algorithm has terminated
 		// Get the features to write geojson output
-
 		allFeatures.add(drone.getPath());
 
 		for (Feature f : drone.getVisitedSensors()) {
-			double battery = map.getSensorBattery(f.getStringProperty("location"));
-			String reading = map.getSensorReading(f.getStringProperty("location"));
+			var battery = map.getSensorBattery(f.getStringProperty("location"));
+			var reading = map.getSensorReading(f.getStringProperty("location"));
 
 			if (battery >= 10) {
 				f.addStringProperty("rgb-string", getColor(Double.parseDouble(reading)));
@@ -82,7 +81,7 @@ public class App {
 		// System.out.println(allFeatures.size());
 		writeGeojsonFile(renderGeojson());
 
-		String moveListString = moveListToString(drone.getMoveList());
+		var moveListString = moveListToString(drone.getMoveList());
 		writeMoveFile(moveListString);
 
 	}
@@ -114,17 +113,17 @@ public class App {
 		// Create feature collection from list of features
 		FeatureCollection fc = FeatureCollection.fromFeatures(allFeatures);
 		// Convert to json string
-		String geojson = fc.toJson();
+		var geojson = fc.toJson();
 
 		return geojson;
 	}
 
 	private static void writeGeojsonFile(String content) {
-		// String dateString = day + "-" + month + "-" + year;
-		String dateString = "15" + "-" + "06" + "-" + "2021";
-		String fileName = "readings-" + dateString + ".geojson";
+		// var dateString = day + "-" + month + "-" + year;
+		var dateString = "15" + "-" + "06" + "-" + "2021";
+		var fileName = "readings-" + dateString + ".geojson";
 		try {
-			FileWriter writer = new FileWriter(fileName);
+			var writer = new FileWriter(fileName);
 			writer.write(content);
 			writer.close();
 		} catch (IOException e) {
@@ -133,8 +132,8 @@ public class App {
 	}
 
 	private static String moveListToString(ArrayList<DroneMove> moveList) {
-		String moveListString = "";
-		int counter = 1;
+		var moveListString = "";
+		var counter = 1;
 		for (int i = 0; i < moveList.size(); i++) {
 			moveListString += Integer.toString(counter) + ",";
 			if (counter == 1) {
@@ -147,21 +146,18 @@ public class App {
 			moveListString += Integer.toString(moveList.get(i).getDirection()) + ",";
 			moveListString += Double.toString(moveList.get(i).getLandPoint().longitude()) + ",";
 			moveListString += Double.toString(moveList.get(i).getLandPoint().latitude()) + ",";
-			moveListString += moveList.get(i).getSensorRead();
-			if (counter != moveList.size()) {
-				moveListString += "\n";
-			}
+			moveListString += moveList.get(i).getSensorRead() + "\n";
 			counter++;
 		}
 		return moveListString;
 	}
 
 	private static void writeMoveFile(String content) {
-		// String dateString = day + "-" + month + "-" + year;
-		String dateString = "15" + "-" + "06" + "-" + "2021";
-		String fileName = "flightpath-" + dateString + ".txt";
+		// var dateString = day + "-" + month + "-" + year;
+		var dateString = "15" + "-" + "06" + "-" + "2021";
+		var fileName = "flightpath-" + dateString + ".txt";
 		try {
-			FileWriter writer = new FileWriter(fileName);
+			var writer = new FileWriter(fileName);
 			writer.write(content);
 			writer.close();
 		} catch (IOException e) {
