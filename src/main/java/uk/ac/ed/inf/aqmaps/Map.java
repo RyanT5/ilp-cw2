@@ -59,7 +59,7 @@ public class Map {
 
 	// Get coordinates from words
 	private WordsAddress wordsToLoc(String words) {
-		var wordsList = words.split("\\.");
+		String[] wordsList = words.split("\\.");
 		var urlString = "http://localhost:" + port + "/words/" + wordsList[0] + "/" + wordsList[1] + "/" + wordsList[2]
 				+ "/details.json";
 		var wordsJson = Server.serverRequest(urlString);

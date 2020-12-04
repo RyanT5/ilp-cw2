@@ -54,7 +54,7 @@ public class Drone {
 	public void nextMove() {
 		if (moveList.size() < maxMoves) {
 			// Find next move which takes you closest to target
-			var validNextMoves = new ArrayList<DroneMove>();
+			List<DroneMove> validNextMoves = new ArrayList<DroneMove>();
 			validNextMoves = getValidMoves();
 			closestMove(validNextMoves);
 
@@ -111,8 +111,8 @@ public class Drone {
 	}
 
 	// Get possible moves from drone location
-	private ArrayList<DroneMove> getValidMoves() {
-		var validMovies = new ArrayList<DroneMove>();
+	private List<DroneMove> getValidMoves() {
+		List<DroneMove> validMovies = new ArrayList<DroneMove>();
 
 		for (int i = 0; i < 36; i++) {
 			var direction = i * 10;
@@ -152,7 +152,7 @@ public class Drone {
 				currentLoc = closerMove.getLandPoint();
 			} else {
 				// The drone is avoiding an obstacle
-				var edgeMoves = new ArrayList<DroneMove>();
+				ArrayList<DroneMove> edgeMoves = new ArrayList<DroneMove>();
 				// Get moves that would avoid the obstacle
 				for (var i = 0; i < validMoves.size(); i++) {
 					var direction_1 = validMoves.get(i).getDirection();
@@ -329,7 +329,7 @@ public class Drone {
 
 	// Get the drone path
 	public Feature getPath() {
-		var points = new ArrayList<Point>();
+		List<Point> points = new ArrayList<Point>();
 		points.add(startPoint);
 		for (var move : moveList) {
 			points.add(move.getLandPoint());

@@ -27,7 +27,7 @@ public class App {
 		// Initialise the map - see Map class
 		var map = new Map(day, month, year, port);
 
-		// Get the sesnor and building features from the map
+		// Get the sensor and building features from the map
 		sensors = map.getFeaturedSensors();
 		buildings = map.getNoFlyZones();
 
@@ -115,7 +115,7 @@ public class App {
 		var dateString = day + "-" + month + "-" + year;
 		var fileName = "readings-" + dateString + ".geojson";
 		try {
-			var writer = new FileWriter(fileName);
+			FileWriter writer = new FileWriter(fileName);
 			writer.write(content);
 			writer.close();
 		} catch (IOException e) {
@@ -150,7 +150,7 @@ public class App {
 		var dateString = day + "-" + month + "-" + year;
 		var fileName = "flightpath-" + dateString + ".txt";
 		try {
-			var writer = new FileWriter(fileName);
+			FileWriter writer = new FileWriter(fileName);
 			writer.write(content);
 			writer.close();
 		} catch (IOException e) {
