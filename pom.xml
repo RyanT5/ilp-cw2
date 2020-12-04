@@ -5,11 +5,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>uk.ac.ed.inf</groupId>
-  <artifactId>heatmap</artifactId>
+  <artifactId>aqmaps</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>heatmap</name>
+  <name>aqmaps</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,11 +28,6 @@
       <groupId>com.mapbox.mapboxsdk</groupId>
       <artifactId>mapbox-sdk-geojson</artifactId>
       <version>5.5.0</version>
-	</dependency>
-	<dependency>
-      <groupId>com.mapbox.mapboxsdk</groupId>
-      <artifactId>mapbox-sdk-turf</artifactId>
-      <version>5.6.0</version>
 	</dependency>
   </dependencies>
 
@@ -57,7 +52,7 @@
 				<archive>
 					<index>true</index>
 					<manifest>
-						<mainClass>uk.ac.ed.inf.heatmap.App</mainClass>
+						<mainClass>uk.ac.ed.inf.aqmaps.App</mainClass>
 					</manifest>
 				</archive>
 			</configuration>

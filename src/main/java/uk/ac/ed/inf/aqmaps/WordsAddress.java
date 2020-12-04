@@ -17,7 +17,6 @@ public class WordsAddress {
 
 		// Constructor for nexted class
 		public Coordinates(double lng, double lat) {
-			super();
 			this.lng = lng;
 			this.lat = lat;
 		}
